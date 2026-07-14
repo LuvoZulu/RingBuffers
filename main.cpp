@@ -35,7 +35,7 @@ TEST_CASE("push_back increases size by exactly one", "[array][push_back]") {
     REQUIRE(arr.size() == 2);
 }
 
-TEST_CASE_METHOD(Array, "Buffer reallocation") {
+TEST_CASE_METHOD(gabs::Array, "Buffer reallocation") {
     gabs::Array arr;
 
     SECTION("Checking reallocation through push_back and pop_back") {
