@@ -11,13 +11,30 @@ namespace gabs {
 			size_ = 0;
 			capacity_ = 0;
 		}
-		Array(const Array& obj) {}
+
+		/*
+		* TODO : In order for this copy-constructor to work well, I need this class to first have an indexing/access operator
+		*/
+		Array(const Array& obj) : size_{ obj.size() }, capacity_{obj.capacity()},
+			head_{obj.head()}, tail_{obj.tail()}
+		{
+			//if (data_ == obj.data()) return;
+
+			//data_ = new int[capacity_];
+
+			//for (auto i{ 0uz }; i < size_; i++) {
+			//	data_[i] = obj[(head_ + i) & (capacity_ - 1)];
+			//}
+
+		}
 		Array(Array&& obj) {}
 		~Array() {}
 
 		int* data() const { return data_; };
 		size_t size() const { return size_; }
 		size_t capacity() const { return capacity_; }
+		size_t tail() const { return tail_; }
+		size_t head() const { return head_; }
 
 
 		/*
