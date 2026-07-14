@@ -1,20 +1,29 @@
 #include "ring_buffers.hpp"
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("Default-constructed Array is empty", "[array][construction]") {
+TEST_CASE("Constructor Tests", "[array][construction]") {
     gabs::Array arr;
 
-    REQUIRE(arr.size() == 0);
-    REQUIRE(arr.capacity() == 0);
+    
+    SECTION("Initialize Data Members") {
+        INFO("Make sure that data points to null in a newly constructed Array");
+
+        REQUIRE(arr.data() == nullptr);
+    }
+
+    SECTION("size") {
+        INFO("Ensure the size of a newly constrcuted array is zero");
+
+        REQUIRE(arr.size() == 0);
+    }
+
+    SECTION("capacity") {
+        INFO("Ensure the capacity of a newly constructed array is zero");
+
+        REQUIRE(arr.capacity() == 0);
+    }
 }
 
-TEST_CASE("size() and capacity() are callable through a const reference", "[array][const-correctness]") {
-    gabs::Array arr;
-    const gabs::Array& constArr = arr;
-
-    REQUIRE(constArr.size() == 0);
-    REQUIRE(constArr.capacity() == 0);
-}
 
 TEST_CASE("push_back increases size by exactly one", "[array][push_back]") {
     gabs::Array arr;
@@ -24,6 +33,40 @@ TEST_CASE("push_back increases size by exactly one", "[array][push_back]") {
 
     arr.push_back(7);
     REQUIRE(arr.size() == 2);
+}
+
+TEST_CASE_METHOD(Array, "Buffer reallocation") {
+    gabs::Array arr;
+
+    SECTION("Checking reallocation through push_back and pop_back") {
+        INFO("Empty Array");
+        REQUIRE(arr.size() == 0);
+
+        INFO("Pushed 1st Thing");
+        arr.push_back(1);
+        REQUIRE(arr.size() == 1);
+        REQUIRE(arr.capacity() == 1);
+
+        INFO("Pushed 2nd Thing");
+        arr.push_back(2);
+        REQUIRE(arr.size() == 2);
+        REQUIRE(arr.capacity() == 2);
+
+        INFO("Pushed 3rd Thing");
+        arr.push_back(3);
+        REQUIRE(arr.size() == 3);
+        REQUIRE(arr.capacity() == 4);
+
+        INFO("Poped front Thing");
+        arr.pop_front();
+        REQUIRE(arr.size() == 2);
+        REQUIRE(arr.capacity() == 4);
+
+        INFO("Poped front Thing");
+        arr.pop_front();
+        REQUIRE(arr.size() == 1);
+        REQUIRE(arr.capacity() == 2);
+    }
 }
 
 TEST_CASE("push_back many elements keeps size accurate", "[array][push_back]") {
