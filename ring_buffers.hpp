@@ -1,6 +1,8 @@
 #ifndef RING_BUFFERS_H
 #define RING_BUFFERS_H
 
+#include <algorithm>  // std::swap
+
 namespace gabs {
 
 	class Array {
@@ -25,11 +27,41 @@ namespace gabs {
 			}
 
 		}
+
 		Array(Array&& obj) {}
+
 
 		int& operator[](size_t idx) { return data_[(head_ + idx) & (capacity_ - 1)]; }
 		const int& operator[](size_t idx) const { return data_[(head_ + idx) & (capacity_ - 1)]; }
 
+		Array& operator++() = delete;
+		Array operator++(int) = delete;
+
+		Array& operator=(const Array& other)
+		{
+			if (this == &other)
+				return *this;
+
+			int* new_data = new int[other.capacity_];
+
+			for (size_t i = 0; i < other.size_; ++i)
+				new_data[i] = other[i];
+
+			delete[] data_;
+
+			data_ = new_data;
+			size_ = other.size_;
+			capacity_ = other.capacity_;
+			head_ = 0;
+			tail_ = size_;
+
+			return *this;
+		}
+
+		Array& operator=(Array other) {
+			std::swap(*this, other);
+			return *this;
+		}
 
 		~Array() {}
 
