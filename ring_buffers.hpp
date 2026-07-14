@@ -9,6 +9,7 @@ namespace gabs {
 		Array() {
 		}
 		Array(const Array& obj) {}
+		Array(Array&& obj) {}
 		~Array() {}
 
 		size_t size() const { return size_; }
