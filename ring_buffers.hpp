@@ -58,7 +58,12 @@ namespace gabs {
 			return *this;
 		}
 
-		Array& operator=(Array other) {
+		Array& operator=(Array& other) {
+			std::swap(*this, other);
+			return *this;
+		}
+
+		Array& operator=(Array&& other) {
 			std::swap(*this, other);
 			return *this;
 		}
@@ -70,6 +75,10 @@ namespace gabs {
 		size_t capacity() const { return capacity_; }
 		size_t tail() const { return tail_; }
 		size_t head() const { return head_; }
+
+		// TODO: These two are currently incorrect, use the logic of circular arrays here
+		int* begin() { return data_; }
+		int* end() { return ; }
 
 
 		/*
