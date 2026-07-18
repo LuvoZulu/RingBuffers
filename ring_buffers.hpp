@@ -17,7 +17,7 @@
  * @note        Currently focused on dynamic memory allocation with plans to add
  *              compile-time static allocation support.
  *
- * @see         array
+ * @see         Array
  * @todo        - Implement Doubly Linked List based ring buffer
  *              - Add lock-free version for multi-threaded use
  *              - Add static memory allocation option
@@ -36,9 +36,16 @@ namespace gabs {
 
 	using type = int;
 
-	class array {
+
+	/*
+		* THIS CURRENT VERSION IS THE DYNAMIC MEMORY ALLOCATION
+		* NEXT FEATURE: flag to ensure we choose between dynamic and static memory allocation
+		*/
+	class Array {
 	public:
-		array() {
+		class iterator;
+
+		Array() {
 			head_ = 0;
 			tail_ = 0;
 			size_ = 0;
@@ -46,7 +53,7 @@ namespace gabs {
 		}
 
 		
-		array(const array& obj) : size_{ obj.size() }, capacity_{obj.capacity()},
+		Array(const Array& obj) : size_{ obj.size() }, capacity_{obj.capacity()},
 			head_{obj.head()}, tail_{obj.tail()}
 		{
 			if (data_ == obj.data()) return;
@@ -59,16 +66,16 @@ namespace gabs {
 
 		}
 
-		array(array&& obj) {}
+		Array(Array&& obj) {}
 
 
 		int& operator[](size_t idx) { return data_[(head_ + idx) & (capacity_ - 1)]; }
 		const int& operator[](size_t idx) const { return data_[(head_ + idx) & (capacity_ - 1)]; }
 
-		array& operator++() = delete;
-		array operator++(int) = delete;
+		Array& operator++() = delete;
+		Array operator++(int) = delete;
 
-		array& operator=(const array& other)
+		Array& operator=(const Array& other)
 		{
 			if (this == &other)
 				return *this;
@@ -89,17 +96,17 @@ namespace gabs {
 			return *this;
 		}
 
-		array& operator=(array& other) {
+		Array& operator=(Array& other) {
 			std::swap(*this, other);
 			return *this;
 		}
 
-		array& operator=(array&& other) {
+		Array& operator=(Array&& other) {
 			std::swap(*this, other);
 			return *this;
 		}
 
-		~array() {}
+		~Array() {}
 
 		type* data() const { return data_; };
 		size_t size() const { return size_; }
@@ -107,15 +114,10 @@ namespace gabs {
 		size_t tail() const { return tail_; }
 		size_t head() const { return head_; }
 
-		// TODO: These two are currently incorrect, use the logic of circular arrays here
-		type* begin() { return data_; }
-		type* end() { return ; }
+		// TODO: These two are currently incorrect, use the logic of circular Arrays here
+		iterator begin() { return iterator(this,0); }
+		iterator end() { return iterator(this,size_); }
 
-
-		/*
-		* THIS CURRENT VERSION IS THE DYNAMIC MEMORY ALLOCATION
-		* NEXT FEATURE: flag to ensure we choose between dynamic and static memory allocation
-		*/
 		void push_back(type val) {
 
 			if (capacity_ == 0) {
@@ -146,7 +148,6 @@ namespace gabs {
 			}
 		}
 
-		class iterator;
 	private:
 
 		void reallocate(size_t& new_size) {
@@ -170,15 +171,15 @@ namespace gabs {
 	};
 
 	/*
-	* @ brief     A simple forward iterator class to assist the functionality for arrays
+	* @ brief     A simple forward iterator class to assist the functionality for Arrays
 	* @ params    We need both the head and tail pointers of the objects we are iterating
 	* @ throws    Undefined behaviour, No Language error is thrown
 	*/
-	class array::iterator
+	class Array::iterator
 	{
 	public:
 
-		iterator(array* buffer, std::size_t index)
+		iterator(Array* buffer, std::size_t index)
 			: buffer_(buffer),
 			idx(index)
 		{}
@@ -208,8 +209,7 @@ namespace gabs {
 
 		bool operator==(const iterator& other) const
 		{
-			return buffer_ == other.buffer_
-				&& idx == other.idx;
+			return buffer_ == other.buffer_ && idx == other.idx;
 		}
 
 		bool operator!=(const iterator& other) const
@@ -218,7 +218,7 @@ namespace gabs {
 		}
 
 	private:
-		array* buffer_ = nullptr;
+		Array* buffer_ = nullptr;
 		std::size_t idx = 0;
 	};
 
