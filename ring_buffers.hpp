@@ -1,229 +1,224 @@
 /**
  * @file        ring_buffers.hpp
  * @author      Luvo Zulu
- * @date        2026-07-14
+ * @date        2026-07-18
  * @version     1.0.0
  *
  * @brief       A flexible and efficient collection of ring (circular) buffer
  *              implementations in C++.
  *
- * This is a living project containing various ring buffer implementations
- * (dynamic, static, lock-free ready, etc.). The goal is to provide high-performance,
- * easy-to-use circular buffer solutions for different use cases.
- *
- * Feel free to use and contribute. If you find any performance issues, logical bugs,
- * or have suggestions for improvements, please reach out.
- *
- * @note        Currently focused on dynamic memory allocation with plans to add
- *              compile-time static allocation support.
- *
- * @see         Array
- * @todo        - Implement Doubly Linked List based ring buffer
- *              - Add lock-free version for multi-threaded use
- *              - Add static memory allocation option
- *              - Improve iterator support
- *
  * @copyright   (c) Luvo Zulu 2026
  */
-
 
 #ifndef RING_BUFFERS_H
 #define RING_BUFFERS_H
 
-#include <algorithm>  // std::swap
+#include <algorithm> // std::swap
+#include <stdexcept> // std::out_of_range
 
 namespace gabs {
 
-	using type = int;
+    using type = int;
 
+    class Array {
+    public:
+        class iterator;
 
-	/*
-		* THIS CURRENT VERSION IS THE DYNAMIC MEMORY ALLOCATION
-		* NEXT FEATURE: flag to ensure we choose between dynamic and static memory allocation
-		*/
-	class Array {
-	public:
-		class iterator;
+        Array() : head_(0), tail_(0), size_(0), capacity_(0), data_(nullptr) {}
 
-		Array() {
-			head_ = 0;
-			tail_ = 0;
-			size_ = 0;
-			capacity_ = 0;
-		}
+        Array(const Array& other);
+        Array(Array&& other) noexcept;
+        ~Array();
 
-		
-		Array(const Array& obj) : size_{ obj.size() }, capacity_{obj.capacity()},
-			head_{obj.head()}, tail_{obj.tail()}
-		{
-			if (data_ == obj.data()) return;
+        Array& operator=(const Array& other);
+        Array& operator=(Array&& other) noexcept;
 
-			data_ = new int[capacity_];
+        type& operator[](size_t idx);
+        const type& operator[](size_t idx) const;
 
-			for (auto i{ 0uz }; i < size_; i++) {
-				data_[i] = obj[(head_ + i) & (capacity_ - 1)];
-			}
+        iterator begin();
+        iterator end();
 
-		}
+        void push_back(type val);
+        void pop_front();
 
-		Array(Array&& obj) {}
+        type* data() const { return data_; }
+        size_t size() const { return size_; }
+        size_t capacity() const { return capacity_; }
+        size_t head() const { return head_; }
+        size_t tail() const { return tail_; }
 
+    private:
+        void reallocate(size_t new_size);
 
-		int& operator[](size_t idx) { return data_[(head_ + idx) & (capacity_ - 1)]; }
-		const int& operator[](size_t idx) const { return data_[(head_ + idx) & (capacity_ - 1)]; }
+        type* data_;
+        size_t head_;
+        size_t tail_;
+        size_t size_;
+        size_t capacity_;
+    };
 
-		Array& operator++() = delete;
-		Array operator++(int) = delete;
+    // ====================== Iterator Definition ======================
 
-		Array& operator=(const Array& other)
-		{
-			if (this == &other)
-				return *this;
+    class Array::iterator {
+    public:
+        iterator(Array* buffer, std::size_t index)
+            : buffer_(buffer), idx_(index) {}
 
-			int* new_data = new int[other.capacity_];
+        type& operator*() const {
+            return (*buffer_)[idx_];
+        }
 
-			for (size_t i = 0; i < other.size_; ++i)
-				new_data[i] = other[i];
+        type* operator->() const {
+            return &(*buffer_)[idx_];
+        }
 
-			delete[] data_;
+        iterator& operator++() {
+            ++idx_;
+            return *this;
+        }
 
-			data_ = new_data;
-			size_ = other.size_;
-			capacity_ = other.capacity_;
-			head_ = 0;
-			tail_ = size_;
+        iterator operator++(int) {
+            iterator temp = *this;
+            ++(*this);
+            return temp;
+        }
 
-			return *this;
-		}
+        bool operator==(const iterator& other) const {
+            return buffer_ == other.buffer_ && idx_ == other.idx_;
+        }
 
-		Array& operator=(Array& other) {
-			std::swap(*this, other);
-			return *this;
-		}
+        bool operator!=(const iterator& other) const {
+            return !(*this == other);
+        }
 
-		Array& operator=(Array&& other) {
-			std::swap(*this, other);
-			return *this;
-		}
+    private:
+        Array* buffer_ = nullptr;
+        std::size_t idx_ = 0;
+    };
 
-		~Array() {}
+    // ====================== Array Implementation ======================
 
-		type* data() const { return data_; };
-		size_t size() const { return size_; }
-		size_t capacity() const { return capacity_; }
-		size_t tail() const { return tail_; }
-		size_t head() const { return head_; }
+    inline Array::Array(const Array& other)
+        : size_(other.size_), capacity_(other.capacity_),
+        head_(other.head_), tail_(other.tail_), data_(nullptr)
+    {
+        if (capacity_ == 0) return;
 
-		// TODO: These two are currently incorrect, use the logic of circular Arrays here
-		iterator begin() { return iterator(this,0); }
-		iterator end() { return iterator(this,size_); }
+        data_ = new type[capacity_];
 
-		void push_back(type val) {
+        for (size_t i = 0; i < size_; ++i) {
+            data_[i] = other[(head_ + i) & (capacity_ - 1)];
+        }
+    }
 
-			if (capacity_ == 0) {
-				size_t new_size = 1;
-				reallocate(new_size);
-			
-			}
-			else if (capacity_ == size_) {
-				size_t new_size = capacity_ * 2;
-				reallocate(new_size);
-			}
+    inline Array::Array(Array&& other) noexcept
+        : data_(other.data_), head_(other.head_), tail_(other.tail_),
+        size_(other.size_), capacity_(other.capacity_)
+    {
+        other.data_ = nullptr;
+        other.size_ = 0;
+        other.capacity_ = 0;
+        other.head_ = 0;
+        other.tail_ = 0;
+    }
 
-			data_[tail_] = val;
-			tail_ = (tail_ + 1) & (capacity_ - 1);
-			size_++;
-		}
+    inline Array::~Array() {
+        delete[] data_;
+    }
 
-		void pop_front() {
+    inline Array& Array::operator=(const Array& other) {
+        if (this == &other) return *this;
 
-			if (size_ < 0) return;
+        delete[] data_;
+        data_ = nullptr;
 
-			head_ = (head_ + 1) & (capacity_ - 1);
-			size_--;
+        size_ = other.size_;
+        capacity_ = other.capacity_;
+        head_ = other.head_;
+        tail_ = other.tail_;
 
-			if (size_ < 0.5 * capacity_) {
-				auto new_size = capacity_ / 2;
-				reallocate(new_size);
-			}
-		}
+        if (capacity_ > 0) {
+            data_ = new type[capacity_];
+            for (size_t i = 0; i < size_; ++i) {
+                data_[i] = other[(head_ + i) & (capacity_ - 1)];
+            }
+        }
+        return *this;
+    }
 
-	private:
+    inline Array& Array::operator=(Array&& other) noexcept {
+        if (this == &other) return *this;
 
-		void reallocate(size_t& new_size) {
-			type* new_data = new type[new_size];
+        delete[] data_;
 
-			for (auto i{ 0uz }; i < size_; i++) {
-				*(new_data + i) = data_[(head_ + i) & (capacity_ - 1)];
-			}
+        data_ = other.data_;
+        head_ = other.head_;
+        tail_ = other.tail_;
+        size_ = other.size_;
+        capacity_ = other.capacity_;
 
-			capacity_ = new_size;
+        other.data_ = nullptr;
+        other.size_ = 0;
+        other.capacity_ = 0;
 
-			delete [] data_;
-			data_ = new_data; // NOTE: This escapes this scope
-		}
+        return *this;
+    }
 
-		type* data_ = nullptr;
-		size_t head_;
-		size_t tail_;
-		size_t size_;
-		size_t capacity_;
-	};
+    inline type& Array::operator[](size_t idx) {
+        if (idx < 0 || idx >= size_)
+            throw std::out_of_range("Array index out of range");
 
-	/*
-	* @ brief     A simple forward iterator class to assist the functionality for Arrays
-	* @ params    We need both the head and tail pointers of the objects we are iterating
-	* @ throws    Undefined behaviour, No Language error is thrown
-	*/
-	class Array::iterator
-	{
-	public:
+        return data_[(head_ + idx) & (capacity_ - 1)];
+    }
 
-		iterator(Array* buffer, std::size_t index)
-			: buffer_(buffer),
-			idx(index)
-		{}
+    inline const type& Array::operator[](size_t idx) const {
+        return data_[(head_ + idx) & (capacity_ - 1)];
+    }
 
-		type& operator*() const
-		{
-			return (*buffer_)[idx];
-		}
+    inline void Array::push_back(type val) {
+        if (capacity_ == size_) {
+            reallocate(capacity_ == 0 ? 1 : capacity_ * 2);
+        }
 
-		type* operator->() const
-		{
-			return &(*buffer_)[idx];
-		}
+        data_[tail_] = val;
+        tail_ = (tail_ + 1) & (capacity_ - 1);
+        ++size_;
+    }
 
-		iterator& operator++()
-		{
-			++idx;
-			return *this;
-		}
+    inline void Array::pop_front() {
+        if (size_ == 0) return;
 
-		iterator operator++(int)
-		{
-			iterator temp = *this;
-			++(*this);
-			return temp;
-		}
+        head_ = (head_ + 1) & (capacity_ - 1);
+        --size_;
 
-		bool operator==(const iterator& other) const
-		{
-			return buffer_ == other.buffer_ && idx == other.idx;
-		}
+        if (size_ < capacity_ / 2 && capacity_ > 1) {
+            reallocate(capacity_ / 2);
+        }
+    }
 
-		bool operator!=(const iterator& other) const
-		{
-			return !(*this == other);
-		}
+    inline void Array::reallocate(size_t new_size) {
+        type* new_data = new type[new_size];
 
-	private:
-		Array* buffer_ = nullptr;
-		std::size_t idx = 0;
-	};
+        for (size_t i = 0; i < size_; ++i) {
+            new_data[i] = (*this)[i];
+        }
 
-}
+        delete[] data_;
+        data_ = new_data;
+        capacity_ = new_size;
+        head_ = 0;
+        tail_ = size_;
+    }
 
+    inline Array::iterator Array::begin() {
+        return iterator(this, 0);
+    }
 
+    inline Array::iterator Array::end() {
+        return iterator(this, size_);
+    }
+
+} // namespace gabs
 
 #endif // RING_BUFFERS_H
