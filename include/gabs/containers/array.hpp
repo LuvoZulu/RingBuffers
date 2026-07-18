@@ -1,22 +1,30 @@
 /**
- * @file        ring_buffers.hpp
- * @author      Luvo Zulu
- * @date        2026-07-18
- * @version     1.0.0
- *
- * @brief       A flexible and efficient collection of ring (circular) buffer
- *              implementations in C++.
- *
- * @copyright   (c) Luvo Zulu 2026
- */
+* @file      array.hpp
+* @author    Luvo Zulu
+* @date      2026 - 07 - 18
+* @version   1.0.1
+*
+*@brief      A flexible and efficient collection of ring array buffer implementations.
+*            This will include both static and dynamic arrays
+*@license    MIT LICENSE
+*@copyright(c) Luvo Zulu 2026
+* 
+*/
 
-#ifndef RING_BUFFERS_H
-#define RING_BUFFERS_H
+#ifndef ARRAY_H
+#define ARRAY_H
+
 
 #include <algorithm> // std::swap
 #include <stdexcept> // std::out_of_range
 
-namespace gabs {
+// ====== Library Configuration =======
+#include "gabs/version.hpp"
+#include "gabs/config.hpp"
+#include "gabs/concepts.hpp"
+#include "gabs/type_traits.hpp"
+
+namespace gabs::containers {
 
     using type = int;
 
@@ -218,7 +226,6 @@ namespace gabs {
     inline Array::iterator Array::end() {
         return iterator(this, size_);
     }
+}
 
-} // namespace gabs
-
-#endif // RING_BUFFERS_H
+#endif // !ARRAY_H
