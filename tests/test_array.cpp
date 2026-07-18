@@ -11,15 +11,16 @@
  * of a red/green TDD loop, not a mistake in the tests.
  * @TODO : Implement testing for linked list
  */
-
-#include "ring_buffers.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 #include <vector>
 #include <algorithm>
 #include <type_traits>
 
-using gabs::Array;
+
+#include <gabs/ring_buffers.hpp>
+
+using gabs::containers::Array;
 
 
 // Construction
