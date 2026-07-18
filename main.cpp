@@ -2,7 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("Constructor Tests", "[array][construction]") {
-    gabs::Array arr;
+    gabs::array arr;
 
     
     SECTION("Initialize Data Members") {
@@ -26,7 +26,7 @@ TEST_CASE("Constructor Tests", "[array][construction]") {
 
 
 TEST_CASE("push_back increases size by exactly one", "[array][push_back]") {
-    gabs::Array arr;
+    gabs::array arr;
 
     arr.push_back(42);
     REQUIRE(arr.size() == 1);
@@ -35,8 +35,8 @@ TEST_CASE("push_back increases size by exactly one", "[array][push_back]") {
     REQUIRE(arr.size() == 2);
 }
 
-TEST_CASE_METHOD(gabs::Array, "Buffer reallocation") {
-    gabs::Array arr;
+TEST_CASE_METHOD(gabs::array, "Buffer reallocation") {
+    gabs::array arr;
 
     SECTION("Checking reallocation through push_back and pop_back") {
         INFO("Empty Array");
@@ -70,7 +70,7 @@ TEST_CASE_METHOD(gabs::Array, "Buffer reallocation") {
 }
 
 TEST_CASE("push_back many elements keeps size accurate", "[array][push_back]") {
-    gabs::Array arr;
+    gabs::array arr;
 
     for (int i = 0; i < 100; ++i) {
         arr.push_back(i);
@@ -79,7 +79,7 @@ TEST_CASE("push_back many elements keeps size accurate", "[array][push_back]") {
 }
 
 TEST_CASE("capacity is always >= size after push_back", "[array][push_back][capacity]") {
-    gabs::Array arr;
+    gabs::array arr;
 
     for (int i = 0; i < 200; ++i) {
         arr.push_back(i);
@@ -88,7 +88,7 @@ TEST_CASE("capacity is always >= size after push_back", "[array][push_back][capa
 }
 
 TEST_CASE("capacity never shrinks on its own during push_back", "[array][push_back][capacity]") {
-    gabs::Array arr;
+    gabs::array arr;
     size_t prevCapacity = arr.capacity();
 
     for (int i = 0; i < 50; ++i) {
@@ -99,7 +99,7 @@ TEST_CASE("capacity never shrinks on its own during push_back", "[array][push_ba
 }
 
 TEST_CASE("pop_front decreases size by exactly one", "[array][pop_front]") {
-    gabs::Array arr;
+    gabs::array arr;
     arr.push_back(1);
     arr.push_back(2);
     arr.push_back(3);
@@ -116,7 +116,7 @@ TEST_CASE("pop_front decreases size by exactly one", "[array][pop_front]") {
 }
 
 TEST_CASE("pop_front does not reduce capacity", "[array][pop_front][capacity]") {
-    gabs::Array arr;
+    gabs::array arr;
     arr.push_back(1);
     arr.push_back(2);
     size_t capacityBefore = arr.capacity();
@@ -127,7 +127,7 @@ TEST_CASE("pop_front does not reduce capacity", "[array][pop_front][capacity]") 
 }
 
 TEST_CASE("push_back after popping back to empty still works", "[array][push_back][pop_front]") {
-    gabs::Array arr;
+    gabs::array arr;
     arr.push_back(1);
     arr.pop_front();
     REQUIRE(arr.size() == 0);
@@ -137,7 +137,7 @@ TEST_CASE("push_back after popping back to empty still works", "[array][push_bac
 }
 
 TEST_CASE("Interleaved push_back/pop_front keep size bookkeeping correct", "[array][stress]") {
-    gabs::Array arr;
+    gabs::array arr;
     size_t expected = 0;
 
     for (int i = 0; i < 1000; ++i) {
@@ -154,20 +154,20 @@ TEST_CASE("Interleaved push_back/pop_front keep size bookkeeping correct", "[arr
 }
 
 TEST_CASE("Copy-constructing an empty Array yields an empty Array", "[array][copy]") {
-    gabs::Array original;
-    gabs::Array copy(original);
+    gabs::array original;
+    gabs::array copy(original);
 
     REQUIRE(copy.size() == original.size());
     REQUIRE(copy.size() == 0);
 }
 
 TEST_CASE("Copy-constructing a non-empty Array preserves size", "[array][copy]") {
-    gabs::Array original;
+    gabs::array original;
     original.push_back(10);
     original.push_back(20);
     original.push_back(30);
 
-    gabs::Array copy(original);
+    gabs::array copy(original);
 
     REQUIRE(copy.size() == original.size());
     REQUIRE(copy.size() == 3);
@@ -175,23 +175,23 @@ TEST_CASE("Copy-constructing a non-empty Array preserves size", "[array][copy]")
 }
 
 TEST_CASE("Copy preserves size after original has had elements popped", "[array][copy]") {
-    gabs::Array original;
+    gabs::array original;
     for (int i = 0; i < 5; ++i) original.push_back(i);
     original.pop_front();
     original.pop_front();
 
-    gabs::Array copy(original);
+    gabs::array copy(original);
 
     REQUIRE(copy.size() == original.size());
     REQUIRE(copy.size() == 3);
 }
 
 TEST_CASE("Mutating the copy does not affect the original (deep copy)", "[array][copy]") {
-    gabs::Array original;
+    gabs::array original;
     original.push_back(1);
     original.push_back(2);
 
-    gabs::Array copy(original);
+    gabs::array copy(original);
     copy.push_back(3);
     copy.pop_front();
     copy.pop_front();
@@ -201,10 +201,10 @@ TEST_CASE("Mutating the copy does not affect the original (deep copy)", "[array]
 }
 
 TEST_CASE("Mutating the original after copying does not affect the copy", "[array][copy]") {
-    gabs::Array original;
+    gabs::array original;
     original.push_back(1);
 
-    gabs::Array copy(original);
+    gabs::array copy(original);
     original.push_back(2);
     original.push_back(3);
 
@@ -215,12 +215,12 @@ TEST_CASE("Mutating the original after copying does not affect the copy", "[arra
 
 // To implement basic edge cases on empty arrays
  //TEST_CASE("pop_front on empty Array is a no-op", "[array][pop_front][edge-case]") {
- //    gabs::Array arr;
+ //    gabs::array arr;
  //    REQUIRE_NOTHROW(arr.pop_front());
  //    REQUIRE(arr.size() == 0);
  //}
 
  //TEST_CASE("pop_front on empty Array throws", "[array][pop_front][edge-case]") {
- //    gabs::Array arr;
+ //    gabs::array arr;
  //    REQUIRE_THROWS_AS(arr.pop_front(), std::out_of_range);
  //}
