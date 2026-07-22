@@ -1,6 +1,10 @@
 #pragma once
 #include <type_traits>
 
+#ifndef GABS_TRAITS_H
+#define GABS_TRAITS_H
+
+
 
 namespace gabs::traits {
 	template<typename T>
@@ -21,3 +25,4 @@ namespace gabs::traits {
 
 
 } // gabs::traits
+#endif // !GABS_TRAITS_H
