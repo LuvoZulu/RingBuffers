@@ -9,7 +9,7 @@
 namespace gabs::concepts {
 
 	template<typename T>
-	concept TriviallyCopyable = std::is_trivially_copyable<T>;
+	concept TriviallyCopyable = std::is_trivially_copyable_v<T>;
 
 	template<typename T>
 	concept DefaultConstructible = std::default_initializable<T>;
@@ -21,12 +21,11 @@ namespace gabs::concepts {
 	concept Iterator = requires(T it) {
 		*it;
 		++it;
-		it++;
 		it == it;
 	};
-
+	
 	template<typename T>
-	concept PointerIterator = std::is_pointer<T> && Iterator<T>;
+	concept PointerIterator = std::is_pointer_v<T> && Iterator<T>;
 }
 
 

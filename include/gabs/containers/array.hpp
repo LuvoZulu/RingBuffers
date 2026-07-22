@@ -1,22 +1,8 @@
-/**
-* @file      array.hpp
-* @author    Luvo Zulu
-* @date      2026 - 07 - 18
-* @version   1.0.1
-*
-*@brief      A flexible and efficient collection of ring array buffer implementations.
-*            This will include both static and dynamic arrays
-*@license    MIT LICENSE
-*@copyright(c) Luvo Zulu 2026
-* 
-*/
-
 #ifndef ARRAY_H
 #define ARRAY_H
 
-
-#include <algorithm> // std::swap
-#include <stdexcept> // std::out_of_range
+#include <stdexcept>
+#include <cstddef>
 
 // ====== Library Configuration =======
 #include "gabs/version.hpp"
@@ -26,14 +12,35 @@
 
 namespace gabs::containers {
 
-    
-    template<typename T>
+    template<gabs::concepts::RingBufferCompatible T>
     class Array {
     public:
-        class iterator;
+        class iterator {
+        public:
+            using value_type = T;
+            using pointer = T*;
+            using reference = T&;
 
-        Array() : head_(0), tail_(0), size_(0), capacity_(0), data_(nullptr) {}
+            iterator(Array* buff, std::size_t idx) : buffer_{ buff }, idx_{ idx } {}
 
+            reference operator*() const { return (*buffer_)[idx_]; }
+            pointer operator->() const { return &(*buffer_)[idx_]; }
+
+            iterator& operator++() { ++idx_; return *this; }
+            iterator operator++(int);
+            iterator& operator--() { --idx_; return *this; }
+            iterator operator--(int);
+
+            bool operator==(const iterator& other) const;
+            bool operator!=(const iterator& other) const;
+
+        private:
+            Array* buffer_ = nullptr;
+            std::size_t idx_ = 0;
+        };
+
+        Array() noexcept = default;
+        explicit Array(std::size_t capacity);
         Array(const Array& other);
         Array(Array&& other) noexcept;
         ~Array();
@@ -41,34 +48,57 @@ namespace gabs::containers {
         Array& operator=(const Array& other);
         Array& operator=(Array&& other) noexcept;
 
-        T& operator[](size_t idx);
-        const T& operator[](size_t idx) const;
+        T& operator[](std::size_t idx);
+        const T& operator[](std::size_t idx) const;
 
-        iterator begin();
-        iterator end();
+        T& at(std::size_t idx);
+        const T& at(std::size_t idx) const;
 
-        void push_back(T& val);
+        T& front();
+        const T& front() const;
+        T& back();
+        const T& back() const;
+
+        iterator begin() noexcept;
+        iterator end() noexcept;
+        iterator rbegin() noexcept;
+        iterator rend() noexcept;
+
+        std::size_t size() const noexcept { return size_; }
+        std::size_t capacity() const noexcept { return capacity_; }
+        bool empty() const noexcept { return size_ == 0; }
+        void reserve(std::size_t new_capacity);
+        void shrink_to_fit();
+
+        void push_back(const T& val);
+        void push_back(T&& val);
+        void push_front(const T& val);
+        void push_front(T&& val);
+
         void pop_front();
+        void pop_back();
 
-        T* data() const { return data_; }
-        size_t size() const { return size_; }
-        size_t capacity() const { return capacity_; }
-        size_t head() const { return head_; }
-        size_t tail() const { return tail_; }
+        void clear() noexcept;
+        void resize(std::size_t new_size);
+        void resize(std::size_t new_size, const T& value);
+
+        T* data() noexcept { return data_; }
+        const T* data() const noexcept { return data_; }
 
     private:
-        void reallocate(size_t new_size);
+        void reallocate(std::size_t new_capacity);
 
-        T* data_;
-        size_t head_;
-        size_t tail_;
-        size_t size_;
-        size_t capacity_;
+        T* data_ = nullptr;
+        std::size_t head_ = 0;
+        std::size_t tail_ = 0;
+        std::size_t size_ = 0;
+        std::size_t capacity_ = 0;
     };
 
     Array(const char*)->Array<char>;
-}
 
-#endif // !ARRAY_H
+} // namespace gabs::containers
 
 #include "array_impl.hpp"
+
+#endif // ARRAY_H
