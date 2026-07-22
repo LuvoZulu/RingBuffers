@@ -23,7 +23,6 @@
  *    invoking T's actual special members (Rule-of-Three/Five correctness)
  *    rather than doing something structurally sneaky.
  *
- * @TODO : Implement testing for linked list
  */
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_template_test_macros.hpp>

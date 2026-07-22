@@ -65,6 +65,8 @@ namespace gabs::containers {
         size_t size_;
         size_t capacity_;
     };
+
+    Array(const char*)->Array<char>;
 }
 
 #endif // !ARRAY_H
